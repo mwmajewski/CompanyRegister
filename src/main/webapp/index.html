@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="companyRegister">
+    <head>
+        <meta charset="UTF-8">
+        <title>Company Register</title>
+        <script type="application/javascript" src="js/angular.min.js"></script>
+        <script type="application/javascript" src="js/ui-bootstrap-tpls.min.js"></script>
+        <script type="application/javascript" src="js/companyRegister.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <div ng-controller="CompaniesController" class="col-md-10 col-md-offset-1">
+                    <div class="page-header">
+                        <uib-alert ng-repeat="alert in saveDataAlerts" dismiss-on-timeout="2000" type="success" close="closeAlert($index)">{{alert.msg}}</uib-alert>
+                    </div>
+                    <div id="companies" class="panel panel-default">
+                        <div class="panel-heading"><h3>Company list</h3></div>
+                        <div class="panel-body">
+                            <p>Displays all companies in a table. Click <strong><a href="" title="Add new Company" ng-click="openCompanyModal()">here</a></strong> to add a new Company.</p>
+                        </div>
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Address</th>
+                                    <th>City</th>
+                                    <th>Country</th>
+                                    <th>E-mail</th>
+                                    <th>Phone No.</th>
+                                    <th>No. of Beneficial Owners</th>
+                                    <th>Misc.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="company in companies">
+                                    <td>{{company.name}}</td>
+                                    <td>{{company.address}}</td>
+                                    <td>{{company.city}}</td>
+                                    <td>{{company.country}}</td>
+                                    <td>{{company.email}}</td>
+                                    <td>{{company.phoneNumber}}</td>
+                                    <td>{{company.beneficialOwners.length}}</td>
+                                    <td>
+                                        <a href="" class="btn btn-default" title="Edit this Company" ng-click="openCompanyModal(company)">
+                                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                                        </a>
+                                        <a href="" class="btn btn-default" title="Add Beneficial Owner to this Company" ng-click="openAddBeneficialOwnerModal(company, 'add')">
+                                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                        </a>
+                                        <a href="" class="btn btn-default" title="Show Beneficial Owners for this Company" ng-click="showBeneficialOwners(company)" ng-show="company.beneficialOwners.length > 0">
+                                            <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="beneficialOwners" class="panel panel-default" ng-show="selectedCompany" class="ng-hide">
+                        <div class="panel-heading"><h3>Beneficial Owners for company named <b>{{selectedCompany.name}}</b></h3></div>
+                        <div class="panel-body">
+                            <p>Displays beneficial owners for a selected company in a list. Click <a href="" title="back" ng-click="goTo('companies')"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a> go to back</p>
+                        </div>
+                        <ul ng-repeat="beneficial in beneficials">
+                            <li>{{beneficial.name}}</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <script type="text/ng-template" id="addBeneficialOwnerModal.html">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Please add a new beneficial owner for <strong>{{company.name}}</strong></h3>
+                            </div>
+                            <div class="modal-body" >
+                                <div class="form-group">
+                                    <form class="form-inline" name="addBeneficialOwnerForm" ng-submit="addBeneficial(beneficial)">
+                                        <div class="form-group">
+                                            <label for="boName">Beneficial Owner's Name</label>
+                                            <input type="text" id="boName" class="form-control" ng-model="beneficial.name" ng-required="true" ng-minlength="1"/>
+                                        </div>
+                                        <input type="submit" class="btn btn-success" value="Save"/>
+                                    </form>
+                                </div>
+                                <uib-alert class="alert alert-danger" ng-show="errorMessage" type="error">Saving failed. Please try again later.</uib-alert>
+                            </div>
+                        </script>
+                    </div>
+                    <div>
+                        <script type="text/ng-template" id="companyModal.html">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Please add a new  company</h3>
+                            </div>
+                            <div class="modal-body">
+                                <form class="simple-form" name="companyForm" ng-submit="saveCompany(company)">
+                                    <div class="form-group">
+                                        <label for="name">Name</label>
+                                        <input id="name" class="form-control" ng-model="company.name" type="text" ng-required="true" ng-minlength="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="address">Address</label>
+                                        <input id="address" class="form-control" ng-model="company.address" type="text" ng-required="true" ng-minlength="1"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="city">City</label>
+                                        <input id="city" class="form-control" ng-model="company.city" type="text" ng-required="true" ng-minlength="1"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="country">Country</label>
+                                        <input id="country" class="form-control" ng-model="company.country" type="text" ng-required="true" ng-minlength="1"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">E-mail</label>
+                                        <input id="email" class="form-control" ng-model="company.email" type="email"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="phoneNumber">Phone No.(may start with '+', may include spaces and digits)</label>
+                                        <input id="phoneNumber" class="form-control" ng-model="company.phoneNumber" type="text" pattern="{{phoneNoRegex}}">
+                                    </div>
+                                    <input type="submit" class="btn btn-success" value="{{btn_label}}" />
+                                </form>
+                            </div>
+                            <uib-alert class="alert alert-danger" ng-show="errorMessage" type="error">Saving failed. Please try again later.</uib-alert>
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
