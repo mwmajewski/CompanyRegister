@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.majek.model.BeneficialOwner;
 import pl.majek.model.Company;
+import pl.majek.repository.BeneficialOwnerRepository;
 import pl.majek.repository.CompanyRepository;
 import pl.majek.service.exception.EntityAlreadyExistsException;
 import pl.majek.service.exception.EntityNotFoundException;
@@ -23,6 +24,9 @@ public class CompanyServiceImpl implements CompanyService {
 
 	@Autowired
 	private CompanyRepository companyRepository;
+
+	@Autowired
+	private BeneficialOwnerRepository beneficialOwnerRepository;
 
 	@Override
 	public Company getCompany(Long companyId) {
@@ -63,15 +67,17 @@ public class CompanyServiceImpl implements CompanyService {
 	}
 
 	@Override
-	public void addBeneficialOwner(Long companyId, BeneficialOwner beneficialOwner) {
+	public BeneficialOwner addBeneficialOwner(Long companyId, BeneficialOwner beneficialOwner) {
 		Company company = getExistingCompany(companyId);
 		Long beneficialOwnerId = beneficialOwner.getId();
 		if(beneficialOwnerId != null && checkIfBeneficialOwnerExits(company, beneficialOwnerId)){
 			throw new EntityAlreadyExistsException(String.format("Entity %s with companyId [%d] already exists", "BeneficialOwner", companyId));
 		}
+		BeneficialOwner beneficialOwnerToAdd = beneficialOwnerRepository.save(beneficialOwner);
 		List<BeneficialOwner> beneficialOwners = Optional.ofNullable(company.getBeneficialOwners()).orElse(Collections.EMPTY_LIST);
-		beneficialOwners.add(beneficialOwner);
+		beneficialOwners.add(beneficialOwnerToAdd);
 		companyRepository.save(company);
+		return beneficialOwnerToAdd;
 	}
 
 	private boolean checkIfCompanyIdExits(Long companyId) {

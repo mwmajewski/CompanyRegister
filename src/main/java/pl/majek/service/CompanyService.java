@@ -17,5 +17,5 @@ public interface CompanyService {
 
 	Iterable<BeneficialOwner> getBeneficialOwners(Long id);
 
-	void addBeneficialOwner(Long id, BeneficialOwner beneficialOwner);
+	BeneficialOwner addBeneficialOwner(Long id, BeneficialOwner beneficialOwner);
 }

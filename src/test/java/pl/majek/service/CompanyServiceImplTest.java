@@ -9,6 +9,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import pl.majek.model.BeneficialOwner;
 import pl.majek.model.Company;
 import pl.majek.model.CompanyBuilder;
+import pl.majek.repository.BeneficialOwnerRepository;
 import pl.majek.repository.CompanyRepository;
 import pl.majek.service.exception.EntityAlreadyExistsException;
 import pl.majek.service.exception.EntityNotFoundException;
@@ -33,10 +34,14 @@ public class CompanyServiceImplTest {
 	@Mock
 	CompanyRepository companyRepository;
 
+	@Mock
+	BeneficialOwnerRepository beneficialOwnerRepository;
+
 	@Before
 	public void setUp() throws Exception {
 		sut = new CompanyServiceImpl();
 		ReflectionTestUtils.setField(sut, "companyRepository", companyRepository);
+		ReflectionTestUtils.setField(sut, "beneficialOwnerRepository", beneficialOwnerRepository);
 	}
 
 	private Company getTestCompany(){
@@ -177,6 +182,7 @@ public class CompanyServiceImplTest {
 		sut.addBeneficialOwner(EXISTING_COMPANY_ID, beneficialOwnerToAdd);
 		//then
 		verify(companyRepository).findOne(EXISTING_COMPANY_ID);
+		verify(beneficialOwnerRepository).save(any(BeneficialOwner.class));
 		verify(companyRepository).save(company);
 	}
 }

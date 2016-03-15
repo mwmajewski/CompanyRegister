@@ -1,12 +1,15 @@
 package pl.majek.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 import pl.majek.model.BeneficialOwner;
 import pl.majek.model.Company;
 import pl.majek.service.CompanyService;
 
 import javax.validation.Valid;
+import java.net.URI;
 
 /**
  * Created by majewskm on 2016-02-27.
@@ -30,13 +33,15 @@ public class RegisterController {
 	}
 
 	@RequestMapping(path = "", method = RequestMethod.POST)
-	public Company addCompany(@RequestBody @Valid Company company) {
-		return companyService.addCompany(company);
+	public ResponseEntity<Void> addCompany(@RequestBody @Valid Company company) {
+		Company addedCompany = companyService.addCompany(company);
+		URI location = UriComponentsBuilder.fromPath("/companies/{id}").buildAndExpand(addedCompany.getId()).toUri();
+		return ResponseEntity.created(location).build();
 	}
 
 	@RequestMapping(path = "/{id}", method = RequestMethod.PUT)
-	public Company updateCompany(@PathVariable long id, @RequestBody @Valid Company company) {
-		return companyService.updateCompany(id, company);
+	public void updateCompany(@PathVariable long id, @RequestBody @Valid Company company) {
+		companyService.updateCompany(id, company);
 	}
 
 	@RequestMapping(path = "/{id}/beneficialOwners", method = RequestMethod.GET)
@@ -45,8 +50,13 @@ public class RegisterController {
 	}
 
 	@RequestMapping(path = "/{id}/beneficialOwners", method = RequestMethod.POST)
-	public void addBeneficialOwner(@PathVariable long id, @RequestBody @Valid BeneficialOwner beneficialOwner) {
-		companyService.addBeneficialOwner(id, beneficialOwner);
+	public ResponseEntity<Void> addBeneficialOwner(@PathVariable long id, @RequestBody @Valid BeneficialOwner beneficialOwner) {
+		BeneficialOwner addedBeneficialOwner = companyService.addBeneficialOwner(id, beneficialOwner);
+		URI location = UriComponentsBuilder
+				.fromPath("/companies/{id}/beneficialOwners/{addedBeneficialOwner.id}")
+				.buildAndExpand(id, addedBeneficialOwner.getId())
+				.toUri();
+		return ResponseEntity.created(location).build();
 	}
 
 }

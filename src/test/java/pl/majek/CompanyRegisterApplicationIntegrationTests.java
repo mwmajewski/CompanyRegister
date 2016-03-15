@@ -2,12 +2,14 @@ package pl.majek;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -34,6 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 public class CompanyRegisterApplicationIntegrationTests {
 
+	private static final String COMPANIES_PATH = "/companies";
+	private static final String BENEFICIAL_OWNERS_PATH = "/beneficialOwners";
 	@Autowired
 	RegisterController registerController;
 
@@ -72,15 +76,19 @@ public class CompanyRegisterApplicationIntegrationTests {
 		Company companyToAdd = getTestCompany();
 		byte[] companyToAddJson = om.writerFor(Company.class).writeValueAsBytes(companyToAdd);
 		//when
+		String locationRegex = COMPANIES_PATH + "/[0-9]+";
 		MvcResult mvcResult = mockMvc.perform(
-				MockMvcRequestBuilders.post("/companies")
+				MockMvcRequestBuilders.post(COMPANIES_PATH)
 						.content(companyToAddJson)
 						.contentType(MediaType.APPLICATION_JSON_UTF8))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andReturn();
+						.andExpect(MockMvcResultMatchers.status().isCreated())
+						.andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION,  Matchers.matchesPattern(locationRegex)))
+						.andReturn();
 		//then
-		Company responseCompany = om.readValue(mvcResult.getResponse().getContentAsString(), Company.class);
-		Company savedCompany = companyRepository.findOne(responseCompany.getId());
+		String location = mvcResult.getResponse().getHeader(HttpHeaders.LOCATION);
+		String[] locationSegments = location.split("/");
+		Long addedCompanyId = Long.valueOf(locationSegments[locationSegments.length - 1]);
+		Company savedCompany = companyRepository.findOne(addedCompanyId);
 		Assert.assertNotNull(savedCompany);
 		Assert.assertEquals(companyToAdd.getName(), savedCompany.getName());
 		Assert.assertEquals(companyToAdd.getAddress(), savedCompany.getAddress());
@@ -97,7 +105,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		byte[] companyToAddJson = om.writerFor(Company.class).writeValueAsBytes(companyToAdd);
 		//when
 		mockMvc.perform(
-				MockMvcRequestBuilders.post("/companies")
+				MockMvcRequestBuilders.post(COMPANIES_PATH)
 						.content(companyToAddJson)
 						.contentType(MediaType.APPLICATION_JSON_UTF8))
 		//then
@@ -113,14 +121,13 @@ public class CompanyRegisterApplicationIntegrationTests {
 		byte[] companyToAddJson = om.writerFor(Company.class).writeValueAsBytes(companyToUpdate);
 		//when
 		MvcResult mvcResult = mockMvc.perform(
-				MockMvcRequestBuilders.put("/companies/{id}", companyToUpdate.getId())
+				MockMvcRequestBuilders.put(COMPANIES_PATH + "/{id}", companyToUpdate.getId())
 						.content(companyToAddJson)
 						.contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andReturn();
 		//then
-		Company responseCompany = om.readValue(mvcResult.getResponse().getContentAsString(), Company.class);
-		Company updatedCompany = companyRepository.findOne(responseCompany.getId());
+		Company updatedCompany = companyRepository.findOne(companyToUpdate.getId());
 		Assert.assertNotNull(updatedCompany);
 		Assert.assertEquals(newCompanyName, updatedCompany.getName());
 		Assert.assertEquals(companyToUpdate.getAddress(), updatedCompany.getAddress());
@@ -134,7 +141,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		companyToUpdate.setId(nonExistentId);
 		byte[] companyToAddJson = om.writerFor(Company.class).writeValueAsBytes(companyToUpdate);
 		//when
-		mockMvc.perform(MockMvcRequestBuilders.put("/companies/{id}", nonExistentId)
+		mockMvc.perform(MockMvcRequestBuilders.put(COMPANIES_PATH + "/{id}", nonExistentId)
 				.content(companyToAddJson)
 				.contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(MockMvcResultMatchers.status()
@@ -148,7 +155,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		Company companyToUpdate = companyRepository.save(getTestCompany());
 		byte[] companyToAddJson = om.writerFor(Company.class).writeValueAsBytes(companyToUpdate);
 		//when
-		mockMvc.perform(MockMvcRequestBuilders.put("/companies/{id}", nonExistentId)
+		mockMvc.perform(MockMvcRequestBuilders.put(COMPANIES_PATH + "/{id}", nonExistentId)
 				.content(companyToAddJson)
 				.contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(MockMvcResultMatchers.status()
@@ -160,7 +167,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		//given
 		Company companyToGet = companyRepository.save(getTestCompany());
 		//when
-		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/companies/{id}", companyToGet.getId())
+		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get(COMPANIES_PATH + "/{id}", companyToGet.getId())
 										.accept(MediaType.APPLICATION_JSON_UTF8))
 										.andExpect(MockMvcResultMatchers.status().isOk())
 										.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -175,7 +182,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		//given
 		long nonExistentId = 1234134234L;
 		//when
-		mockMvc.perform(MockMvcRequestBuilders.get("/companies/{id}", nonExistentId)
+		mockMvc.perform(MockMvcRequestBuilders.get(COMPANIES_PATH + "/{id}", nonExistentId)
 				.accept(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
@@ -187,7 +194,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		Company companyToAdd2 = companyRepository.save(getTestCompany());
 		Company companyToAdd3 = companyRepository.save(getTestCompany());
 		//when
-		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/companies").accept(MediaType.APPLICATION_JSON_UTF8))
+		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get(COMPANIES_PATH).accept(MediaType.APPLICATION_JSON_UTF8))
 										.andExpect(MockMvcResultMatchers.status().isOk())
 										.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
 										.andReturn();
@@ -204,7 +211,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		//given
 		Company companyWithBeneficialOwners = companyRepository.save(getTestCompany());
 		//when
-		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/companies/{id}/beneficialOwners", companyWithBeneficialOwners.getId())
+		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get(COMPANIES_PATH + "/{id}" + BENEFICIAL_OWNERS_PATH, companyWithBeneficialOwners.getId())
 									.accept(MediaType.APPLICATION_JSON_UTF8))
 									.andExpect(MockMvcResultMatchers.status().isOk())
 									.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8)).andReturn();
@@ -221,7 +228,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		//given
 		long nonExistentId = 1234134234L;
 		//when
-		mockMvc.perform(MockMvcRequestBuilders.get("/companies/{id}/beneficialOwners", nonExistentId)
+		mockMvc.perform(MockMvcRequestBuilders.get(COMPANIES_PATH + "/{id}" + BENEFICIAL_OWNERS_PATH, nonExistentId)
 				.accept(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(MockMvcResultMatchers.status().isNotFound());
 	}
@@ -235,10 +242,13 @@ public class CompanyRegisterApplicationIntegrationTests {
 		bo.setName(beneficialOwnerName);
 		byte[] boJson = om.writerFor(BeneficialOwner.class).writeValueAsBytes(bo);
 		//when
-		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/companies/{id}/beneficialOwners", companyWithBeneficialOwners.getId())
+		String locationRegex = COMPANIES_PATH + "/" + companyWithBeneficialOwners.getId() + BENEFICIAL_OWNERS_PATH + "/[0-9]+";
+		MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(COMPANIES_PATH + "/{id}" + BENEFICIAL_OWNERS_PATH, companyWithBeneficialOwners.getId())
 									.content(boJson)
 									.contentType(MediaType.APPLICATION_JSON_UTF8))
-									.andExpect(MockMvcResultMatchers.status().isOk())
+									.andExpect(MockMvcResultMatchers.status().isCreated())
+									.andExpect(MockMvcResultMatchers.header()
+											.string(HttpHeaders.LOCATION, Matchers.matchesPattern(locationRegex)))
 									.andReturn();
 		//then
 		Company savedCompany = companyRepository.findOne(companyWithBeneficialOwners.getId());
@@ -258,7 +268,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		BeneficialOwner alreadyExistingBeneficialOwner = companyWithBeneficialOwners.getBeneficialOwners().get(0);
 		byte[] boJson = om.writerFor(BeneficialOwner.class).writeValueAsBytes(alreadyExistingBeneficialOwner);
 		//when
-		mockMvc.perform(MockMvcRequestBuilders.post("/companies/{id}/beneficialOwners", companyWithBeneficialOwners.getId())
+		mockMvc.perform(MockMvcRequestBuilders.post(COMPANIES_PATH + "/{id}" + BENEFICIAL_OWNERS_PATH, companyWithBeneficialOwners.getId())
 			.content(boJson)
 			.contentType(MediaType.APPLICATION_JSON_UTF8))
 			.andExpect(MockMvcResultMatchers.status().isConflict());
