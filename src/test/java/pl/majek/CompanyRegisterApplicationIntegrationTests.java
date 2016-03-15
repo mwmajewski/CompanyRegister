@@ -99,7 +99,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 	}
 
 	@Test
-	public void shouldReturn409WhenTryingToAddCompanyWithExistingId() throws Exception {
+	public void shouldReturn400WhenTryingToAddCompanyWithExistingId() throws Exception {
 		//given
 		Company companyToAdd = companyRepository.save(getTestCompany());
 		byte[] companyToAddJson = om.writerFor(Company.class).writeValueAsBytes(companyToAdd);
@@ -109,7 +109,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 						.content(companyToAddJson)
 						.contentType(MediaType.APPLICATION_JSON_UTF8))
 		//then
-						.andExpect(MockMvcResultMatchers.status().isConflict());
+						.andExpect(MockMvcResultMatchers.status().isBadRequest());
 	}
 
 	@Test
@@ -149,7 +149,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 	}
 
 	@Test
-	public void shouldReturn409WhenTryingToUpdateCompanyUsingWrongIdInPath() throws Exception {
+	public void shouldReturn400WhenTryingToUpdateCompanyUsingWrongIdInPath() throws Exception {
 		//given
 		long nonExistentId = 1234134234L;
 		Company companyToUpdate = companyRepository.save(getTestCompany());
@@ -159,7 +159,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 				.content(companyToAddJson)
 				.contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(MockMvcResultMatchers.status()
-				.isConflict());
+				.isBadRequest());
 	}
 
 	@Test
@@ -262,7 +262,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 	}
 
 	@Test
-	public void shouldReturn409WhenTryingToAddBeneficialOwnerWithAlreadyExistingId() throws Exception {
+	public void shouldReturn400WhenTryingToAddBeneficialOwnerWithAlreadyExistingId() throws Exception {
 		//given
 		Company companyWithBeneficialOwners = companyRepository.save(getTestCompany());
 		BeneficialOwner alreadyExistingBeneficialOwner = companyWithBeneficialOwners.getBeneficialOwners().get(0);
@@ -271,7 +271,7 @@ public class CompanyRegisterApplicationIntegrationTests {
 		mockMvc.perform(MockMvcRequestBuilders.post(COMPANIES_PATH + "/{id}" + BENEFICIAL_OWNERS_PATH, companyWithBeneficialOwners.getId())
 			.content(boJson)
 			.contentType(MediaType.APPLICATION_JSON_UTF8))
-			.andExpect(MockMvcResultMatchers.status().isConflict());
+			.andExpect(MockMvcResultMatchers.status().isBadRequest());
 		//then
 	}
 }

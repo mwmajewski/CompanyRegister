@@ -16,7 +16,9 @@
 5.  Using Rest API with cURL tool
     Rest web service can be consumed using curl command 
     *  Obtaining Company list can be achieved by typing 
-        ```curl -X GET http://localhost:8080/companies```
+        ```
+        curl -X GET http://localhost:8080/companies
+        ```
     
         Expected response looks like this:
         ```json
@@ -27,26 +29,37 @@
         ```
     
     *  Obtaining a Company knowing it's id can be achieved by typing: 
-        ```curl -X GET http://localhost:8080/companies/{companyId}```
+        ```
+        curl -X GET http://localhost:8080/companies/{companyId}
+        ```
         Expected response looks like this:
         ```json
         {"id":1,"name":"IBM","address":"#3 Brown St.","city":"London","country":"UK","email":"sales@ibm.com","phoneNumber":"+44 432 567 567","beneficialOwners":[{"id":1,"name":"Beneficial Owner 1"},{"id":2,"name":"Beneficial Owner 2"}]}
         ```
     
     *  Adding a Company can be achieved by typing: 
-        ```curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"Company Name\",\"address\":\"#1 Test Street\",\"city\":\"Test City\",\"country\":\"Poland\"}" http://localhost:8080/companies```
+        ```
+        curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"Company Name\",\"address\":\"#1 Test Street\",\"city\":\"Test City\",\"country\":\"Poland\"}" http://localhost:8080/companies
+        ```
         
     *  Updating a Company can be achieved by typing: 
-        ```curl -X PUT -H "Content-Type: application/json" -d "{\"id\":\"5\",\"name\":\"Company Name\",\"address\":\"#1 Test Street\",\"city\":\"Test City\",\"country\":\"Poland\",\"email\":\"example@example.pl\"}" http://localhost:8080/companies/5```
+        ```
+        curl -X PUT -H "Content-Type: application/json" -d "{\"id\":\"5\",\"name\":\"Company Name\",\"address\":\"#1 Test Street\",\"city\":\"Test City\",\"country\":\"Poland\",\"email\":\"example@example.pl\"}" http://localhost:8080/companies/5
+        ```
 
     *  Obtaining Beneficial Owner list for a given Company knowing it's id can be achieved by typing: 
-        ```curl -X GET http://localhost:8080/companies/{companyId}/beneficialOwners```
+        ```
+        curl -X GET http://localhost:8080/companies/{companyId}/beneficialOwners
+        ```
         Expected response looks like this:
         ```json
         [{"id":1,"name":"Beneficial Owner 1"},{"id":2,"name":"Beneficial Owner 2"}]
         ```
-    *  Adding a Beneficial Owner to a given Company knowing it's id can be achieved by typing `curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"beneficiary #1\"}" http://localhost:8080/companies/{companyId}/beneficialOwners`
+    *  Adding a Beneficial Owner to a given Company knowing it's id can be achieved by typing 
+        ```
+        curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"beneficiary #1\"}" http://localhost:8080/companies/{companyId}/beneficialOwners
+        ```
         
     *  Expected error codes:
-        * 409 if {companyId} from URL does not match company id from POST request content when updating a company or adding a Beneficial Owner
+        * 400 if {companyId} from URL does not match company id from POST request content when updating a company or adding a Beneficial Owner
         * 404 if company with id from URL({companyId}) does not exist when requesting a particular Company or it's Beneficial Owners
