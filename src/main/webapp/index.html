@@ -62,7 +62,7 @@
                     <div id="beneficialOwners" class="panel panel-default" ng-show="selectedCompany" class="ng-hide">
                         <div class="panel-heading"><h3>Beneficial Owners for company named <b>{{selectedCompany.name}}</b></h3></div>
                         <div class="panel-body">
-                            <p>Displays beneficial owners for a selected company in a list. Click <a href="" title="back" ng-click="goTo('companies')"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a> go to back</p>
+                            <p>Displays beneficial owners for a selected company in a list. Click <a href="" title="up" ng-click="goTo('companies')"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a> to go up</p>
                         </div>
                         <ul ng-repeat="beneficial in beneficials">
                             <li>{{beneficial.name}}</li>
